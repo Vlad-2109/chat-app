@@ -4,7 +4,6 @@ import { getUserDetailsFromToken } from '../helpers/getUserDetailsFromToken';
 export const userDetails = async (req: Request, res: Response) => {
   try {
     const token = req.cookies.token || '';
-    console.log(token);
 
     const user = await getUserDetailsFromToken(token);
 
