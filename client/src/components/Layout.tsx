@@ -1,9 +1,13 @@
 import { Outlet } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 export const Layout: React.FC = () => {
   return (
     <>
-      <Outlet />
+      <Toaster />
+      <main>
+        <Outlet />
+      </main>
     </>
   );
 };
