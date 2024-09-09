@@ -21,5 +21,6 @@ export interface DataCheckEmailState {
 }
 
 export interface DataCheckPasswordState {
+  userId: string;
   password: string;
 }
