@@ -33,7 +33,9 @@ export const CheckEmailPage: React.FC = () => {
           email: '',
         });
 
-        navigate('/password');
+        navigate('/password', {
+          state: response?.data?.data,
+        });
       }
     } catch (error) {
       const err = error as { response: { data: { message: string } } };
