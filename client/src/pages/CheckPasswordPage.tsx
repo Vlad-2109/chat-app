@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Avatar } from '../components/Avatar';
+import { useAppDispatch } from '../redux/hook';
+import { setToken } from '../redux/userSlice';
 
 export const CheckPasswordPage: React.FC = () => {
   const [data, setData] = useState<DataCheckPasswordState>({
@@ -13,6 +15,7 @@ export const CheckPasswordPage: React.FC = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   console.log('location', location.state);
 
@@ -48,6 +51,8 @@ export const CheckPasswordPage: React.FC = () => {
       toast.success(response.data.message);
 
       if (response.data.success) {
+        dispatch(setToken(response?.data?.token));
+        localStorage.setItem('token', response?.data?.token);
         setData({
           userId: '',
           password: '',

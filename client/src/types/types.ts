@@ -1,3 +1,5 @@
+import { UserState } from '../redux/types';
+
 export interface AuthLayoutsProps {
   children: React.ReactNode;
 }
@@ -7,6 +9,11 @@ export interface AvatarProps {
   imageUrl: string;
   width: number;
   height: number;
+}
+
+export interface EditUserDetailsProps {
+  onClose: () => void;
+  user: UserState;
 }
 
 export interface DataState {
@@ -23,4 +30,9 @@ export interface DataCheckEmailState {
 export interface DataCheckPasswordState {
   userId: string;
   password: string;
+}
+
+export interface EditUserDetailsState {
+  name: string;
+  profile_pic: string;
 }
