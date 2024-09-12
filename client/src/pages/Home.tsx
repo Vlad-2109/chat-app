@@ -3,7 +3,12 @@ import io from 'socket.io-client';
 import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../redux/hook';
-import { logout, setOnlineUser, setUser } from '../redux/userSlice';
+import {
+  logout,
+  setOnlineUser,
+  setSocketConnection,
+  setUser,
+} from '../redux/userSlice';
 import { Sidebar } from '../components/Sidebar';
 import logo from '../assets/logo.png';
 
@@ -49,6 +54,8 @@ export const Home: React.FC = () => {
       console.log(data);
       dispatch(setOnlineUser(data));
     });
+
+    dispatch(setSocketConnection(socketConnection));
 
     return () => {
       socketConnection.disconnect();
