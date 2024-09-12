@@ -1,4 +1,5 @@
 import axios from 'axios';
+import io from 'socket.io-client';
 import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch /*useAppSelector*/ } from '../redux/hook';
@@ -35,6 +36,20 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     fetchUserDetails();
+  }, []);
+
+  useEffect(() => {
+    const socketConnection = io(import.meta.env.VITE_REACT_APP_BACKEND_URL, {
+      auth: { token: localStorage.getItem('token') },
+    });
+
+    socketConnection.on('onlineUser', (data) => {
+      console.log(data);
+    });
+
+    return () => {
+      socketConnection.disconnect();
+    };
   }, []);
 
   const basePath = location.pathname === '/';
