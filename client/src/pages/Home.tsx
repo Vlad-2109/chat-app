@@ -1,16 +1,16 @@
 import axios from 'axios';
 import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/hook';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAppDispatch /*useAppSelector*/ } from '../redux/hook';
 import { logout, setUser } from '../redux/userSlice';
 import { Sidebar } from '../components/Sidebar';
+import logo from '../assets/logo.png';
 
 export const Home: React.FC = () => {
-  const user = useAppSelector((state) => state.user);
+  //const user = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-  console.log('redux user', user);
+  const location = useLocation();
 
   const fetchUserDetails = async () => {
     try {
@@ -23,7 +23,7 @@ export const Home: React.FC = () => {
 
       dispatch(setUser(response.data.data));
 
-      if (response.data.logout) {
+      if (response.data.data.logout) {
         dispatch(logout());
         navigate('/email');
       }
@@ -36,14 +36,27 @@ export const Home: React.FC = () => {
   useEffect(() => {
     fetchUserDetails();
   }, []);
+
+  const basePath = location.pathname === '/';
+
   return (
     <div className="grid lg:grid-cols-[300px,1fr] h-screen max-h-screen">
-      <section className="bg-white">
+      <section className={`bg-white ${!basePath && 'hidden'} lg:block`}>
         <Sidebar />
       </section>
-      <section>
+      <section className={`${basePath && 'hidden'}`}>
         <Outlet />
       </section>
+      <div
+        className={`justify-center items-center flex-col gap-2 hidden ${!basePath ? 'hidden' : 'lg:flex'}`}
+      >
+        <div>
+          <img src={logo} width={250} alt="logo" />
+        </div>
+        <p className="text-lg mt-2 text-slate-500">
+          Select user to send message
+        </p>
+      </div>
     </div>
   );
 };

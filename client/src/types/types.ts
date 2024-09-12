@@ -36,3 +36,22 @@ export interface EditUserDetailsState {
   name: string;
   profile_pic: string;
 }
+
+export interface SearchUserState {
+  createdAt: string;
+  email: string;
+  name: string;
+  profile_pic: string;
+  updatedAt: string;
+  __v: number;
+  _id: string;
+}
+
+export interface UserSearchCardProps {
+  user: SearchUserState;
+  onClose: () => void;
+}
+
+export interface SearchUserProps {
+  onClose: () => void;
+}
