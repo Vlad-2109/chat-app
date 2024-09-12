@@ -5,6 +5,7 @@ export interface AuthLayoutsProps {
 }
 
 export interface AvatarProps {
+  userId: string;
   name: string;
   imageUrl: string;
   width: number;

@@ -4,4 +4,5 @@ export interface UserState {
   email: string;
   profile_pic: string;
   token: string;
+  onlineUser: string[];
 }

@@ -15,6 +15,7 @@ export const UserSearchCard: React.FC<UserSearchCardProps> = ({ user, onClose })
           height={50}
           name={user.name}
           imageUrl={user.profile_pic}
+          userId={user?._id}
         />
       </div>
       <div className="">

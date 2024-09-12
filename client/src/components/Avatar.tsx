@@ -1,12 +1,16 @@
+import { useAppSelector } from '../redux/hook';
 import { AvatarProps } from '../types/types';
 import { PiUserCircle } from 'react-icons/pi';
 
 export const Avatar: React.FC<AvatarProps> = ({
+  userId,
   name,
   imageUrl,
   width,
   height,
 }) => {
+  const onlineUser = useAppSelector((state) => state?.user?.onlineUser);
+
   let avatarName: string = '';
 
   if (name) {
@@ -33,9 +37,11 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   const randomNumber = Math.floor(Math.random() * 9);
 
+  const isOnline = onlineUser.includes(userId);
+
   return (
     <div
-      className={`text-slate-800 overflow-hidden rounded-full font-bold`}
+      className={`text-slate-800 rounded-full font-bold relative`}
       style={{ width: width + 'px', height: height + 'px' }}
     >
       {imageUrl ? (
@@ -55,6 +61,10 @@ export const Avatar: React.FC<AvatarProps> = ({
         </div>
       ) : (
         <PiUserCircle size={width} />
+      )}
+
+      {isOnline && (
+        <div className="bg-green-600 p-1 absolute bottom-2 -right-1 z-10 rounded-full"></div>
       )}
     </div>
   );

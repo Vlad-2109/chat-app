@@ -2,16 +2,18 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAppDispatch /*useAppSelector*/ } from '../redux/hook';
-import { logout, setUser } from '../redux/userSlice';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
+import { logout, setOnlineUser, setUser } from '../redux/userSlice';
 import { Sidebar } from '../components/Sidebar';
 import logo from '../assets/logo.png';
 
 export const Home: React.FC = () => {
-  //const user = useAppSelector((state) => state.user);
+  const user = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  console.log('user', user);
 
   const fetchUserDetails = async () => {
     try {
@@ -45,6 +47,7 @@ export const Home: React.FC = () => {
 
     socketConnection.on('onlineUser', (data) => {
       console.log(data);
+      dispatch(setOnlineUser(data));
     });
 
     return () => {
