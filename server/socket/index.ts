@@ -4,6 +4,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { getUserDetailsFromToken } from '../helpers/getUserDetailsFromToken';
 import { UserModel } from '../models/user.model';
+import { ConversationModel, MessageModel } from '../models/conversation.model';
 
 dotenv.config();
 
@@ -38,10 +39,53 @@ io.on('connection', async (socket) => {
       _id: userDetails?._id,
       name: userDetails?.name,
       email: userDetails?.email,
+      profile_pic: userDetails?.profile_pic,
       online: onlineUser.has(userId),
     };
 
     socket.emit('message-user', payload);
+  });
+
+  socket.on('new message', async (data) => {
+    let conversation = await ConversationModel.findOne({
+      $or: [
+        { sender: data.sender, receiver: data.receiver },
+        { sender: data.receiver, receiver: data.sender },
+      ],
+    });
+
+    if (!conversation) {
+      const createConversation = new ConversationModel({
+        sender: data.sender,
+        receiver: data.receiver,
+      });
+      conversation = await createConversation.save();
+    }
+
+    const message = new MessageModel({
+      text: data.text,
+      imageUrl: data.imageUrl,
+      videoUrl: data.videoUrl,
+      msgByUserId: data.msgByUserId,
+    });
+    const saveMessage = await message.save();
+
+    const updateConversation = await ConversationModel.updateOne(
+      { _id: conversation._id },
+      { $push: { messages: saveMessage._id } },
+    );
+
+    const getConversationMessage = await ConversationModel.findOne({
+      $or: [
+        { sender: data.sender, receiver: data.receiver },
+        { sender: data.receiver, receiver: data.sender },
+      ],
+    })
+      .populate('messages')
+      .sort({ updatedAt: -1 });
+
+    io.to(data?.sender).emit('message', getConversationMessage?.messages);
+    io.to(data?.receiver).emit('message', getConversationMessage?.messages);
   });
 
   socket.on('disconnect', () => {

@@ -24,6 +24,20 @@ export interface DataState {
   profile_pic: string;
 }
 
+export interface DataUserState {
+  _id: string;
+  name: string;
+  email: string;
+  profile_pic: string;
+  online: boolean;
+}
+
+export interface MessageState {
+  text: string;
+  imageUrl: string;
+  videoUrl: string;
+}
+
 export interface DataCheckEmailState {
   email: string;
 }

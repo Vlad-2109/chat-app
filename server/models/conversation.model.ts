@@ -10,13 +10,18 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    video: {
+    videoUrl: {
       type: String,
       default: '',
     },
     seen: {
       type: Boolean,
       default: false,
+    },
+    msgByUserId: {
+      type: mongoose.Schema.ObjectId,
+      required: true,
+      ref: 'User',
     },
   },
   {
@@ -36,7 +41,7 @@ const conversationSchema = new mongoose.Schema(
       required: true,
       ref: 'User',
     },
-    message: [
+    messages: [
       {
         type: mongoose.Schema.ObjectId,
         ref: 'Message',
@@ -49,4 +54,7 @@ const conversationSchema = new mongoose.Schema(
 );
 
 export const MessageModel = mongoose.model('Message', messageSchema);
-export const ConversationModel = mongoose.model('Conversation', conversationSchema);
+export const ConversationModel = mongoose.model(
+  'Conversation',
+  conversationSchema,
+);
