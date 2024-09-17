@@ -4,17 +4,51 @@ import { BiLogOut } from 'react-icons/bi';
 import { NavLink } from 'react-router-dom';
 import { Avatar } from './Avatar';
 import { useAppSelector } from '../redux/hook';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import EditUserDetails from './EditUserDetails';
 import { FiArrowUpLeft } from 'react-icons/fi';
 import { SearchUser } from './SearchUser';
 import { SearchUserState } from '../types/types';
+import { FaImage, FaVideo } from 'react-icons/fa';
 
 export const Sidebar: React.FC = () => {
   const user = useAppSelector((state) => state?.user);
   const [editUserOpen, setEditUserOpen] = useState<boolean>(false);
   const [allUser, setAllUser] = useState<SearchUserState[] | []>([]);
   const [openSearchUser, setOpenSearchUser] = useState<boolean>(false);
+  const socketConnection = useAppSelector(
+    (state) => state.user.socketConnection,
+  );
+
+  useEffect(() => {
+    if (socketConnection) {
+      socketConnection.emit('sidebar', user._id);
+
+      socketConnection.on('conversation', (data) => {
+        console.log('conversation', data);
+
+        const conversationUserData = data.map((conversationUser: any) => {
+          if (conversationUser.sender?._id === conversationUser.receiver?._id) {
+            return {
+              ...conversationUser,
+              userDetails: conversationUser.sender,
+            };
+          } else if (conversationUser.receiver._id !== user._id) {
+            return {
+              ...conversationUser,
+              userDetails: conversationUser.receiver,
+            };
+          } else {
+            return {
+              ...conversationUser,
+              userDetails: conversationUser.sender,
+            };
+          }
+        });
+        setAllUser(conversationUserData);
+      });
+    }
+  }, [socketConnection, user]);
 
   return (
     <div className="w-full h-full grid grid-cols-[48px,1fr] bg-white">
@@ -78,6 +112,53 @@ export const Sidebar: React.FC = () => {
               </p>
             </div>
           )}
+
+          {allUser.map((conv: any) => (
+            <NavLink
+              to={'/' + conv.userDetails._id}
+              key={conv._id}
+              className="flex items-center gap-2 py-3 px-2 border border-transparent hover:border-primary rounded hover:bg-slate-100 cursor-pointer"
+            >
+              <div className="">
+                <Avatar
+                  userId={conv.userDetails._id}
+                  imageUrl={conv.userDetails.profile_pic}
+                  name={conv.userDetails.name}
+                  width={40}
+                  height={40}
+                />
+              </div>
+              <div className="">
+                <h3 className="text-ellipsis line-clamp-1 font-semibold text-base">
+                  {conv.userDetails.name}
+                </h3>
+                <div className="text-slate-500 text-xs flex items-center gap-1">
+                  <div className="flex items-center gap-1">
+                    {conv.lastMessage.imageUrl && (
+                      <div className="flex items-center gap-1">
+                        <span>
+                          <FaImage />
+                        </span>
+                        {!conv.lastMessage.text && <span>Image</span>}
+                      </div>
+                    )}
+                    {conv.lastMessage.videoUrl && (
+                      <div className="flex items-center gap-1">
+                        <span>
+                          <FaVideo />
+                        </span>
+                        {!conv.lastMessage.text && <span>Video</span>}
+                      </div>
+                    )}
+                  </div>
+                  <p>{conv.lastMessage.text}</p>
+                </div>
+              </div>
+              <p className="text-xs w-6 h-6 flex justify-center items-center ml-auto p-1 bg-primary text-white font-semibold rounded-full">
+                {conv.unseenMessage}
+              </p>
+            </NavLink>
+          ))}
         </div>
       </div>
 

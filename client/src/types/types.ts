@@ -62,6 +62,18 @@ export interface SearchUserState {
   _id: string;
 }
 
+export interface AllMessagesState {
+  createdAt: string;
+  imageUrl: string;
+  msgByUserId: string;
+  seen: boolean;
+  text: string;
+  updatedAt: string;
+  videoUrl: string;
+  __v: number;
+  _id: string;
+}
+
 export interface UserSearchCardProps {
   user: SearchUserState;
   onClose: () => void;

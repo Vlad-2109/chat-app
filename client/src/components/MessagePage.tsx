@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import moment from 'moment';
 import { useAppSelector } from '../redux/hook';
-import { DataUserState, MessageState } from '../types/types';
+import { AllMessagesState, DataUserState, MessageState } from '../types/types';
 import { Avatar } from './Avatar';
 import { HiDotsVertical } from 'react-icons/hi';
 import { FaAngleLeft } from 'react-icons/fa6';
@@ -35,6 +36,17 @@ export const MessagePage: React.FC = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [allMessages, setAllMessages] = useState<AllMessagesState[]>([]);
+  const currentMessage = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (currentMessage.current) {
+      currentMessage.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      });
+    }
+  }, [allMessages]);
 
   const handleUploadImageVideoOpen = () => {
     setOpenImageVideoUpload((prevValue) => !prevValue);
@@ -93,6 +105,11 @@ export const MessagePage: React.FC = () => {
           videoUrl: message.videoUrl,
           msgByUserId: user._id,
         });
+        setMessage({
+          text: '',
+          imageUrl: '',
+          videoUrl: '',
+        });
       }
     }
   };
@@ -107,6 +124,7 @@ export const MessagePage: React.FC = () => {
 
       socketConnection.on('message', (data) => {
         console.log('message data', data);
+        setAllMessages(data);
       });
     }
   }, [socketConnection, params.userId, user]);
@@ -155,8 +173,38 @@ export const MessagePage: React.FC = () => {
       </header>
 
       <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-50">
+        <div ref={currentMessage} className="flex flex-col gap-2 py-2 mx-2">
+          {allMessages.map((message) => (
+            <div
+              key={message._id}
+              className={`bg-white p-1 py-1 my-2 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${user._id === message.msgByUserId ? 'ml-auto bg-teal-100' : ''}`}
+            >
+              <div className="w-full">
+                {message.imageUrl && (
+                  <img
+                    src={message.imageUrl}
+                    className="w-full h-full object-scale-down"
+                  />
+                )}
+                {message.videoUrl && (
+                  <video
+                    src={message.videoUrl}
+                    className="w-full h-full object-scale-down"
+                    controls
+                  />
+                )}
+              </div>
+
+              <p className="px-2">{message.text}</p>
+              <p className="text-xs ml-auto w-fit">
+                {moment(message.createdAt).format('hh:mm')}
+              </p>
+            </div>
+          ))}
+        </div>
+
         {message.imageUrl && (
-          <div className="w-full h-full bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden">
+          <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden">
             <div
               className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-600"
               onClick={handleClearUploadImage}
@@ -173,7 +221,7 @@ export const MessagePage: React.FC = () => {
           </div>
         )}
         {message.videoUrl && (
-          <div className="w-full h-full bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden">
+          <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden">
             <div
               className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-600"
               onClick={handleClearUploadVideo}
@@ -192,11 +240,10 @@ export const MessagePage: React.FC = () => {
           </div>
         )}
         {loading && (
-          <div className="w-full h-full flex justify-center items-center">
+          <div className="w-full h-full sticky bottom-0 flex justify-center items-center">
             <Loading />
           </div>
         )}
-        Show all messages
       </section>
 
       <section className="h-16 bg-white flex items-center px-4">

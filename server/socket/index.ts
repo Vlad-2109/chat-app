@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { getUserDetailsFromToken } from '../helpers/getUserDetailsFromToken';
 import { UserModel } from '../models/user.model';
 import { ConversationModel, MessageModel } from '../models/conversation.model';
+import { getConversation } from '../helpers/getConversation';
 
 dotenv.config();
 
@@ -44,6 +45,19 @@ io.on('connection', async (socket) => {
     };
 
     socket.emit('message-user', payload);
+
+    if (user && '_id' in user) {
+      const getConversationMessage = await ConversationModel.findOne({
+        $or: [
+          { sender: user._id, receiver: userId },
+          { sender: userId, receiver: user._id },
+        ],
+      })
+        .populate('messages')
+        .sort({ updatedAt: -1 });
+
+      socket.emit('message', getConversationMessage?.messages || []);
+    }
   });
 
   socket.on('new message', async (data) => {
@@ -77,15 +91,29 @@ io.on('connection', async (socket) => {
 
     const getConversationMessage = await ConversationModel.findOne({
       $or: [
-        { sender: data.sender, receiver: data.receiver },
-        { sender: data.receiver, receiver: data.sender },
+        { sender: data?.sender, receiver: data?.receiver },
+        { sender: data?.receiver, receiver: data?.sender },
       ],
     })
       .populate('messages')
       .sort({ updatedAt: -1 });
 
-    io.to(data?.sender).emit('message', getConversationMessage?.messages);
-    io.to(data?.receiver).emit('message', getConversationMessage?.messages);
+    io.to(data?.sender).emit('message', getConversationMessage?.messages || []);
+    io.to(data?.receiver).emit('message', getConversationMessage?.messages || []);
+
+    const conversationSender = await getConversation(data?.sender);
+    const conversationReceiver = await getConversation(data?.receiver);
+
+    io.to(data?.sender).emit('conversation', conversationSender);
+    io.to(data?.receiver).emit('conversation', conversationReceiver);
+  });
+
+  socket.on('sidebar', async (currentUserId) => {
+    console.log('current user', currentUserId);
+
+    const conversation = await getConversation(currentUserId);
+
+    socket.emit('conversation', conversation);
   });
 
   socket.on('disconnect', () => {
