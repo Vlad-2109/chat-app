@@ -99,7 +99,10 @@ io.on('connection', async (socket) => {
       .sort({ updatedAt: -1 });
 
     io.to(data?.sender).emit('message', getConversationMessage?.messages || []);
-    io.to(data?.receiver).emit('message', getConversationMessage?.messages || []);
+    io.to(data?.receiver).emit(
+      'message',
+      getConversationMessage?.messages || [],
+    );
 
     const conversationSender = await getConversation(data?.sender);
     const conversationReceiver = await getConversation(data?.receiver);
@@ -114,6 +117,32 @@ io.on('connection', async (socket) => {
     const conversation = await getConversation(currentUserId);
 
     socket.emit('conversation', conversation);
+  });
+
+  socket.on('seen', async (msgByUserId) => {
+    if (user && '_id' in user) {
+      let conversation = await ConversationModel.findOne({
+        $or: [
+          { sender: user?._id, receiver: msgByUserId },
+          { sender: msgByUserId, receiver: user?._id },
+        ],
+      });
+
+      if (conversation) {
+        const conversationMessageId = conversation.messages || [];
+
+        const updateMessages = await MessageModel.updateMany(
+          { _id: { $in: conversationMessageId }, msgByUserId: msgByUserId },
+          { $set: { seen: true } },
+        );
+
+        const conversationSender = await getConversation(user?._id?.toString());
+        const conversationReceiver = await getConversation(msgByUserId);
+
+        io.to(user?._id?.toString()).emit('conversation', conversationSender);
+        io.to(msgByUserId).emit('conversation', conversationReceiver);
+      }
+    }
   });
 
   socket.on('disconnect', () => {

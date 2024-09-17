@@ -1,4 +1,4 @@
-import { ConversationModel } from "../models/conversation.model";
+import { ConversationModel } from '../models/conversation.model';
 
 export const getConversation = async (currentUserId: string) => {
   if (currentUserId) {
@@ -12,9 +12,14 @@ export const getConversation = async (currentUserId: string) => {
 
     const conversation = currentUserConversation.map((conv: any) => {
       const countUnseenMessages = conv.messages.reduce(
-        (prev: any, curr: any) => prev + (curr.seen ? 0 : 1),
-        0,
-      );
+        (prev: any, curr: any) => {
+          const msgByUserId = curr.msgByUserId.toString();
+          if (msgByUserId !== currentUserId) {
+            return prev + (curr.seen ? 0 : 1);
+          } else {
+            return prev;
+          }
+        },0);
       return {
         _id: conv._id,
         sender: conv.sender,

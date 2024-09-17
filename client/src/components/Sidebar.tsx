@@ -1,15 +1,16 @@
 import { IoChatbubbleEllipses } from 'react-icons/io5';
 import { FaUserPlus } from 'react-icons/fa';
 import { BiLogOut } from 'react-icons/bi';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Avatar } from './Avatar';
-import { useAppSelector } from '../redux/hook';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
 import { useEffect, useState } from 'react';
 import EditUserDetails from './EditUserDetails';
 import { FiArrowUpLeft } from 'react-icons/fi';
 import { SearchUser } from './SearchUser';
 import { SearchUserState } from '../types/types';
 import { FaImage, FaVideo } from 'react-icons/fa';
+import { logout } from '../redux/userSlice';
 
 export const Sidebar: React.FC = () => {
   const user = useAppSelector((state) => state?.user);
@@ -19,6 +20,10 @@ export const Sidebar: React.FC = () => {
   const socketConnection = useAppSelector(
     (state) => state.user.socketConnection,
   );
+
+  const dispatch = useAppDispatch();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (socketConnection) {
@@ -49,6 +54,12 @@ export const Sidebar: React.FC = () => {
       });
     }
   }, [socketConnection, user]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/email');
+    localStorage.clear();
+  };
 
   return (
     <div className="w-full h-full grid grid-cols-[48px,1fr] bg-white">
@@ -88,6 +99,7 @@ export const Sidebar: React.FC = () => {
           <button
             title="logout"
             className="w-12 h-12 flex justify-center items-center cursor-pointer hover:bg-slate-200 rounded"
+            onClick={handleLogout}
           >
             <span className="-ml-2">
               <BiLogOut size={20} />
@@ -151,12 +163,16 @@ export const Sidebar: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <p>{conv.lastMessage.text}</p>
+                  <p className="text-ellipsis line-clamp-1">
+                    {conv.lastMessage.text}
+                  </p>
                 </div>
               </div>
-              <p className="text-xs w-6 h-6 flex justify-center items-center ml-auto p-1 bg-primary text-white font-semibold rounded-full">
-                {conv.unseenMessage}
-              </p>
+              {Boolean(conv.unseenMessage) && (
+                <p className="text-xs w-6 h-6 flex justify-center items-center ml-auto p-1 bg-primary text-white font-semibold rounded-full">
+                  {conv.unseenMessage}
+                </p>
+              )}
             </NavLink>
           ))}
         </div>

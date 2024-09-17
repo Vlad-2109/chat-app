@@ -118,6 +118,8 @@ export const MessagePage: React.FC = () => {
     if (socketConnection) {
       socketConnection.emit('message-page', params.userId);
 
+      socketConnection.emit('seen', params.userId);
+
       socketConnection.on('message-user', (data) => {
         setDataUser(data);
       });
@@ -177,7 +179,7 @@ export const MessagePage: React.FC = () => {
           {allMessages.map((message) => (
             <div
               key={message._id}
-              className={`bg-white p-1 py-1 my-2 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${user._id === message.msgByUserId ? 'ml-auto bg-teal-100' : ''}`}
+              className={`p-1 py-1 my-2 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${user._id === message.msgByUserId ? 'ml-auto bg-teal-100' : 'bg-white'}`}
             >
               <div className="w-full">
                 {message.imageUrl && (
